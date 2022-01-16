@@ -18,6 +18,8 @@ public class WXTextMsg {
     private String content;
     private String msgId;
 
+    private String userNameInCorp;
+
     @Override
     public String toString() {
         return "TextMsg [ToUserName=" + toUserName + ", FromUserName=" + fromUserName + ", CreateTime=" + createTime + ", MsgType=" + msgType + ", Content=" + content + "]";
@@ -57,6 +59,10 @@ public class WXTextMsg {
         } catch (Exception e) {
 
         }
+    }
+
+    public String Log() {
+        return fromUserName + "|" + userNameInCorp + ": " + msgType + "|" + content;
     }
 
     public String getToUserName() {
@@ -105,5 +111,13 @@ public class WXTextMsg {
 
     public void setMsgId(String msgId) {
         this.msgId = msgId;
+    }
+
+    public String getUserNameInCorp() {
+        return userNameInCorp;
+    }
+
+    public void setUserNameInCorp(String userNameInCorp) {
+        this.userNameInCorp = userNameInCorp;
     }
 }

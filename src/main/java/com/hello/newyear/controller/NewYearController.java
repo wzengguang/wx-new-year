@@ -13,7 +13,7 @@ import java.util.List;
 @Controller
 public class NewYearController {
 
-    @GetMapping("/new-year")
+    @GetMapping(value = {"/new-year", "/"})
     public String hello(@RequestParam(name = "name", required = false, defaultValue = "Happy New Year!") String name, Model model) {
         model.addAttribute("name", name);
         return "newYear";
