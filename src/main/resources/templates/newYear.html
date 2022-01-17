@@ -3,45 +3,138 @@
 
 <head>
     <title>Getting Started: Serving Web Content</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
 
 <body>
-    <div ng-init="data=[]">
+<div ng-init="data=[]">
+    <ul>
+        <li ng-repeat="item in data">
+            <span>{{item.userNameInCorp}}</span>
+            <span>:</span>
+            <span>{{item.content}}</span>
+        </li>
+    </ul>
+</div>
+<div id="blessContainer"></div>
+<script src="/angular-1.8.2/angular.min.js"></script>
 
-        <h1 th:text="'Hello, ' + ${name} + '!'" />
-        <p>祝福:</p>
-        <ul>
-            <li ng-repeat="item in data">
-                <span>{{item.userNameInCorp}}</span>
-                <span>:</span>
-                <span>{{item.content}}</span>
-            </li>
-        </ul>
-    </div>
+<script type="text/javascript">
+    var repeactTime = 1;
+    var maxInScreen = 100;
+    var xSpeed = 1;
+    var ySpeed = 2;
+    var inversionMaxdistance = 500;
+    var inScreem = [];
+    var floatWidth = 100;
+    var waitQueue = [];
 
-    <script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
-
-    <script type="text/javascript">
-        var list = [];
-        var app = angular.module('ngApp', []);
-        app.controller('ngController', function ($scope, $http, $interval) {
-
-            $interval(function () {
-                $http({
-                    method: "Get",
-                    url: "/hellos"
-                }).then(function success(response) {
-                    $scope.data = response.data;
-                    list = response.data;
-                    console.log(list);
-                })
-
-            }, 1000);
-
+    for (var j = 0; j < 100; j++) {
+        waitQueue.push({
+            msgId: j.toString(),
+            content: "新年快乐" + j
         });
+    }
 
-    </script>
+    var list = [];
+    var app = angular.module('ngApp', []);
+    app.controller('ngController', function ($scope, $http, $interval) {
+        $interval(function () {
+            $http({
+                method: "Get",
+                url: "/hellos"
+            }).then(function success(response) {
+                $scope.data = response.data;
+                list = response.data;
+                var all = waitQueue.concat(inScreem);
+                for (var t = 0; t < list.length; t++) {
+                    var obj = all.find(a => a.msgId == list[t].msgId);
+                    if (!obj) {
+                        waitQueue.push(list[t]);
+                    }
+                }
+            });
+        }, 1500);
+    });
+    // setInterval(function () {
+    //     for (var m = 0; m < inScreem.length; m++) {
+    //         var first = inScreem[m].el;
+    //         var ft = parseFloat(first.style.top.replace("px", ""));
+    //         var fr = parseFloat(first.style.right.replace("px", ""));
+    //         for (var n = 0; n < inScreem.length; n++) {
+    //             var second = inScreem[n].el;
+    //             var st = parseFloat(second.style.top.replace("px", ""));
+    //             var sr = parseFloat(second.style.right.replace("px", ""));
+    //
+    //             if (Math.abs(ft - st) < floatWidth / 4 && Math.abs(fr - sr) < floatWidth / 10) {
+    //
+    //                 if (inScreem[m].inversion == inScreem[n].inversion) {
+    //                     inScreem[m].inversion = !inScreem[m].inversion;
+    //                     inScreem[m].inversionMaxdistance = Math.random() * inversionMaxdistance;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }, 5000)
+
+    var cite = 1;
+
+    setInterval(function () {
+        cite++;
+
+        if (cite % 10 == 0) {
+            if (inScreem.length < 100 && waitQueue.length > 0) {
+                var data = waitQueue.shift();
+                data['el'] = creacteEle(data);
+                data['inversion'] = Math.random() < 0.5;
+                data['inversionMaxdistance'] = Math.random() * inversionMaxdistance;
+                data['ySpeed'] = ySpeed * (Math.random() * (2 - 0.7) + 0.7);
+                inScreem.push(data);
+                repeactTime++;
+            }
+        }
+
+        if (inScreem.length > 0) {
+            var top = parseFloat(inScreem[0].el.style.top.replace("px", ""));
+            if (top < 0) {
+                var msg = inScreem.shift();
+                msg.el.remove();
+                msg.el = null;
+                waitQueue.push(msg);
+            }
+        }
+
+        for (var i = 0; i < inScreem.length; i++) {
+            var msg = inScreem[i];
+            var el = msg.el;
+            var top = parseFloat(el.style.top.replace("px", "")) - msg.ySpeed;
+            el.style.top = top + "px";
+
+            var fl = msg['inversion'] ? xSpeed : xSpeed * -1;
+            var right = parseFloat(el.style.right.replace("px", "")) + fl;
+            msg.inversionMaxdistance -= xSpeed;
+            if (right < 0 || right > window.innerWidth - floatWidth || msg.inversionMaxdistance < 0) {
+                msg.inversion = !msg.inversion;
+                msg.inversionMaxdistance = Math.random() * inversionMaxdistance;
+            }
+            el.style.right = right + "px";
+        }
+    }, 100);
+
+    function creacteEle(data) {
+        var el = document.createElement("div");
+        el.style.display = "inline-block"
+        el.textContent = data.content;
+        el.style.width = "100px";
+        el.style.height = "50px";
+        el.style.background = "green";
+        el.style.position = "fixed";
+        el.style.top = window.innerHeight + "px";
+        el.style.right = Math.random() * (window.innerWidth - 2 * floatWidth) + floatWidth + "px";
+        var parent = document.getElementById("blessContainer");
+        parent.appendChild(el);
+        return el;
+    }
+</script>
 </body>
-
 </html>
